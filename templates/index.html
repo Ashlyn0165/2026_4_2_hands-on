@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merged Orders Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="page-shell">
+        <header class="hero">
+            <div>
+                <p class="eyebrow">Flask + SQLite Dashboard</p>
+                <h1>实时查看 merged orders 与 region summary</h1>
+                <p class="hero-copy">页面会轮询数据库更新时间；当 SQLite 数据变化时，前端会自动刷新表格内容。</p>
+            </div>
+            <div class="hero-side">
+                <div class="hero-chip">自动刷新</div>
+                <div class="hero-chip" id="refresh-interval">{{ poll_interval_ms // 1000 }}s / 次</div>
+            </div>
+        </header>
+
+        <section class="stats-grid">
+            <article class="stat-card primary">
+                <span>订单条数</span>
+                <strong id="order-count">0</strong>
+            </article>
+            <article class="stat-card success">
+                <span>汇总区域数</span>
+                <strong id="summary-count">0</strong>
+            </article>
+            <article class="stat-card dark">
+                <span>数据库状态</span>
+                <strong id="db-status">等待加载</strong>
+            </article>
+            <article class="stat-card purple">
+                <span>最近更新时间</span>
+                <strong id="last-updated">--</strong>
+            </article>
+        </section>
+
+        <main class="content-grid">
+            <section class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h2>Merged Orders</h2>
+                        <p>订单与客户数据按 <code>customer_id</code> 合并后的结果</p>
+                    </div>
+                    <button id="manual-refresh" class="btn">立即刷新</button>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>order_id</th>
+                                <th>customer_id</th>
+                                <th>customer_name</th>
+                                <th>region</th>
+                                <th>amount</th>
+                                <th>currency</th>
+                                <th>amount_cny</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orders-body">
+                            <tr class="empty-row">
+                                <td colspan="7">正在加载数据...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="panel side-panel">
+                <div class="panel-header">
+                    <div>
+                        <h2>Summary Table</h2>
+                        <p>按 <code>region</code> 统计平均 <code>amount_cny</code></p>
+                    </div>
+                </div>
+                <div class="table-wrap compact">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>region</th>
+                                <th>avg_amount_cny</th>
+                            </tr>
+                        </thead>
+                        <tbody id="summary-body">
+                            <tr class="empty-row">
+                                <td colspan="2">正在加载数据...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="status-box" id="status-box">页面初始化中...</div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        window.APP_CONFIG = {
+            pollIntervalMs: {{ poll_interval_ms | tojson }}
+        };
+    </script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
